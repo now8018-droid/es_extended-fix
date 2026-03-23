@@ -105,7 +105,14 @@ else
         return setmetatable({ src = src }, {
             __index = function(self, method)
                 return function(...)
-                    return exports.es_extended:RunStaticPlayerMethod(self.src, method, ...)
+                    local args = table.pack(...)
+
+                    if args.n > 0 and args[1] == self then
+                        table.remove(args, 1)
+                        args.n = args.n - 1
+                    end
+
+                    return exports.es_extended:RunStaticPlayerMethod(self.src, method, table.unpack(args, 1, args.n))
                 end
             end
         })
