@@ -80,6 +80,20 @@ function Core.StopJoinFreeze()
     setJoinFreezeState(false, false)
 end
 
+local function applyRemovedHudComponents()
+    local config = Config and Config.RemoveHudComponents
+    if type(config) ~= "table" then
+        return
+    end
+
+    for i = 1, #config do
+        if config[i] then
+            SetHudComponentSize(i, 0.0, 0.0)
+            SetHudComponentPosition(i, 900.0, 900.0)
+        end
+    end
+end
+
 function Core.StartJoinFreeze(skipDelay)
     local config = getJoinFreezeConfig()
 
@@ -160,6 +174,8 @@ local function waitForPlayerActivation()
     if not NetworkIsPlayerActive(ESX.playerId) then
         return SetTimeout(100, waitForPlayerActivation)
     end
+
+    applyRemovedHudComponents()
 
     ESX.DisableSpawnManager()
     DoScreenFadeOut(0)
