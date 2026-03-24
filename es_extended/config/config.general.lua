@@ -97,6 +97,39 @@ Config.ClientActionLoopInterval = 2500
 Config.PedLoopInterval = 2500 -- ชื่อคอนฟิกเดิมเพื่อความเข้ากันได้ย้อนหลัง; แนะนำให้ใช้ ClientActionLoopInterval แทน
 Config.SlowLoopInterval = 2500
 Config.EnablePlayerSyncLookAt = false -- ตัวเลือก NetworkSetLocalPlayerSyncLookAt มีต้นทุนเล็กน้อย; ปิดไว้เพื่อลด resmon ให้ต่ำที่สุด
+Config.JoinFreeze = {
+    enabled = true, -- เปิด/ปิดระบบ freeze ตอนเข้าเซิร์ฟเวอร์
+    startDelayMs = 0, -- หน่วงก่อนเริ่ม freeze หลัง playerLoaded
+    autoUnfreezeTimeoutMs = 15000, -- ปลด freeze อัตโนมัติเมื่อครบเวลา (0 = ไม่ตั้ง timeout)
+    pollIntervalMs = 0, -- รอบตรวจ input เพื่อปลด freeze (0 = ทุกเฟรม)
+    unfreezeOnMovement = true, -- ปลด freeze เมื่อกดปุ่มเดิน
+    forceZeroVelocity = true, -- บังคับความเร็วเป็น 0 ระหว่าง freeze เพื่อลดโอกาสไถล/ตกแมพ
+    movementControls = { 30, 31, 32, 33, 34, 35 }, -- INPUT_MOVE_LR/UD และคีย์เดิน W/A/S/D
+}
+Config.RemoveHudComponents = {
+    [1] = false, -- WANTED_STARS
+    [2] = false, -- WEAPON_ICON
+    [3] = false, -- CASH
+    [4] = false, -- MP_CASH
+    [5] = false, -- MP_MESSAGE
+    [6] = true, -- VEHICLE_NAME
+    [7] = true, -- AREA_NAME
+    [8] = true, -- VEHICLE_CLASS
+    [9] = true, -- STREET_NAME
+    [10] = false, -- HELP_TEXT
+    [11] = false, -- FLOATING_HELP_TEXT_1
+    [12] = false, -- FLOATING_HELP_TEXT_2
+    [13] = false, -- CASH_CHANGE
+    [14] = false, -- RETICLE
+    [15] = false, -- SUBTITLE_TEXT
+    [16] = false, -- RADIO_STATIONS
+    [17] = false, -- SAVING_GAME
+    [18] = false, -- GAME_STREAM
+    [19] = false, -- WEAPON_WHEEL
+    [20] = false, -- WEAPON_WHEEL_STATS
+    [21] = false, -- HUD_COMPONENTS
+    [22] = false, -- HUD_WEAPONS
+}
 Config.ClientStatebagCoordsInterval = 8000 -- ช่วงเวลาที่ client ส่งพิกัดเข้า statebag หน่วยเป็นมิลลิวินาที; ค่ายิ่งมาก งาน Lua/native ยิ่งน้อย
 Config.ClientStatebagCoordsMinMove = 4.0 -- ผู้เล่นต้องขยับอย่างน้อยกี่เมตรก่อนส่งพิกัดใหม่อีกครั้ง เพื่อลดจำนวนการเขียน statebag
 Config.DiscordActivity = {
