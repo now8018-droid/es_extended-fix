@@ -63,6 +63,7 @@ RegisterNetEvent("esx:playerLoaded", function(xPlayer, isNew, skin)
     ClearPedTasksImmediately(ESX.PlayerData.ped)
 
     Core.FreezePlayer(false)
+    Core.StartJoinFreeze()
 
     if IsScreenFadedOut() then
         DoScreenFadeIn(500)
@@ -96,6 +97,7 @@ local isFirstSpawn = true
 ESX.SecureNetEvent("esx:onPlayerLogout", function()
     ESX.PlayerLoaded = false
     isFirstSpawn = true
+    Core.StopJoinFreeze()
 end)
 
 ESX.SecureNetEvent("esx:setMaxWeight", function(newMaxWeight)
