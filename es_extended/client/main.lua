@@ -26,31 +26,93 @@ ESX.Game.Utils = {}
 
 local joinFreezeThreadActive = false
 local joinFreezeActive = false
-local joinFreezeMovementControls = { 30, 31, 32, 33, 34, 35 }
+local joinFreezePendingStart = false
 
-local function setJoinFreezeState(active)
+local defaultJoinFreezeControls = { 30, 31, 32, 33, 34, 35 }
+
+local function getJoinFreezeConfig()
+    local config = Config and Config.JoinFreeze
+    if type(config) ~= "table" then
+        return {}
+    end
+
+    return config
+end
+
+local function getJoinFreezeNumber(config, key, fallback)
+    local value = tonumber(config[key])
+    if value == nil then
+        return fallback
+    end
+
+    return value
+end
+
+local function getJoinFreezeControls(config)
+    if type(config.movementControls) == "table" and #config.movementControls > 0 then
+        return config.movementControls
+    end
+
+    return defaultJoinFreezeControls
+end
+
+local function setJoinFreezeState(active, forceZeroVelocity)
     local ped = PlayerPedId()
 
     if ped <= 0 or not DoesEntityExist(ped) then
         return
     end
 
-    SetEntityVelocity(ped, 0.0, 0.0, 0.0)
+    if forceZeroVelocity then
+        SetEntityVelocity(ped, 0.0, 0.0, 0.0)
+    end
+
     FreezeEntityPosition(ped, active)
 end
 
 function Core.StopJoinFreeze()
-    if not joinFreezeActive then
+    if not joinFreezePendingStart and not joinFreezeActive then
         return
     end
 
+    joinFreezePendingStart = false
     joinFreezeActive = false
-    setJoinFreezeState(false)
+    setJoinFreezeState(false, false)
 end
 
-function Core.StartJoinFreeze()
+function Core.StartJoinFreeze(skipDelay)
+    local config = getJoinFreezeConfig()
+
+    if config.enabled == false then
+        Core.StopJoinFreeze()
+        return
+    end
+
+    if not skipDelay then
+        local startDelay = math.max(0, getJoinFreezeNumber(config, "startDelayMs", 0))
+        if startDelay > 0 then
+            if joinFreezePendingStart or joinFreezeActive then
+                return
+            end
+
+            joinFreezePendingStart = true
+            SetTimeout(startDelay, function()
+                if not joinFreezePendingStart or joinFreezeActive then
+                    return
+                end
+
+                joinFreezePendingStart = false
+                Core.StartJoinFreeze(true)
+            end)
+            return
+        end
+    end
+
+    joinFreezePendingStart = false
     joinFreezeActive = true
-    setJoinFreezeState(true)
+
+    local forceZeroVelocity = config.forceZeroVelocity ~= false
+    setJoinFreezeState(true, forceZeroVelocity)
 
     if joinFreezeThreadActive then
         return
@@ -59,13 +121,25 @@ function Core.StartJoinFreeze()
     joinFreezeThreadActive = true
 
     CreateThread(function()
+        local startedAt = GetGameTimer()
+        local autoTimeout = math.max(0, getJoinFreezeNumber(config, "autoUnfreezeTimeoutMs", 15000))
+        local pollInterval = math.max(0, getJoinFreezeNumber(config, "pollIntervalMs", 0))
+        local controls = getJoinFreezeControls(config)
+        local unfreezeOnMovement = config.unfreezeOnMovement ~= false
+
         while joinFreezeActive do
             local shouldUnfreeze = false
 
-            for i = 1, #joinFreezeMovementControls do
-                if IsControlPressed(0, joinFreezeMovementControls[i]) then
-                    shouldUnfreeze = true
-                    break
+            if autoTimeout > 0 and (GetGameTimer() - startedAt) >= autoTimeout then
+                shouldUnfreeze = true
+            end
+
+            if not shouldUnfreeze and unfreezeOnMovement then
+                for i = 1, #controls do
+                    if IsControlPressed(0, controls[i]) then
+                        shouldUnfreeze = true
+                        break
+                    end
                 end
             end
 
@@ -74,8 +148,8 @@ function Core.StartJoinFreeze()
                 break
             end
 
-            setJoinFreezeState(true)
-            Wait(0)
+            setJoinFreezeState(true, forceZeroVelocity)
+            Wait(pollInterval)
         end
 
         joinFreezeThreadActive = false

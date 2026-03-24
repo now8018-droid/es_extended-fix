@@ -97,6 +97,15 @@ Config.ClientActionLoopInterval = 2500
 Config.PedLoopInterval = 2500 -- ชื่อคอนฟิกเดิมเพื่อความเข้ากันได้ย้อนหลัง; แนะนำให้ใช้ ClientActionLoopInterval แทน
 Config.SlowLoopInterval = 2500
 Config.EnablePlayerSyncLookAt = false -- ตัวเลือก NetworkSetLocalPlayerSyncLookAt มีต้นทุนเล็กน้อย; ปิดไว้เพื่อลด resmon ให้ต่ำที่สุด
+Config.JoinFreeze = {
+    enabled = true, -- เปิด/ปิดระบบ freeze ตอนเข้าเซิร์ฟเวอร์
+    startDelayMs = 0, -- หน่วงก่อนเริ่ม freeze หลัง playerLoaded
+    autoUnfreezeTimeoutMs = 15000, -- ปลด freeze อัตโนมัติเมื่อครบเวลา (0 = ไม่ตั้ง timeout)
+    pollIntervalMs = 0, -- รอบตรวจ input เพื่อปลด freeze (0 = ทุกเฟรม)
+    unfreezeOnMovement = true, -- ปลด freeze เมื่อกดปุ่มเดิน
+    forceZeroVelocity = true, -- บังคับความเร็วเป็น 0 ระหว่าง freeze เพื่อลดโอกาสไถล/ตกแมพ
+    movementControls = { 30, 31, 32, 33, 34, 35 }, -- INPUT_MOVE_LR/UD และคีย์เดิน W/A/S/D
+}
 Config.RemoveHudComponents = {
     [1] = false, -- WANTED_STARS
     [2] = false, -- WEAPON_ICON
